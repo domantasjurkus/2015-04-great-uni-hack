@@ -3,12 +3,22 @@ var HEIGHT = 600;
 var ACC = 10;
 
 var game = new Phaser.Game(WIDTH, HEIGHT, Phaser.AUTO, "phaser-example", { preload: preload, create: create, update: update, render: render });
+var canvas = document.getElementById("canvas");
+var ctx = canvas.getContext("2d");
 
 function preload () {
     game.load.image("ship", "./img/ship.png");
     game.load.image("map", "./img/map.png");
     game.load.image("water", "./img/water.jpg");
     game.load.image("city", "./img/city.png");
+    game.load.image("bg", "./img/bg.png");
+
+    game.load.image("label-man", "./labels/manchester.png");
+    game.load.image("label-nyc", "./labels/new_york.png");
+    game.load.image("label-jon", "./labels/jon.png");
+    game.load.image("label-mel", "./labels/melbourne.png");
+    game.load.image("label-seo", "./labels/seoul.png");
+
     game.load.physics("colShip", "./img/data-ship.json");
     game.load.physics("colMap", "./img/data-map.json");
 };
@@ -18,25 +28,48 @@ var ship;
 var cursors;
 var space;
 var graphics;
+var currentCity = {};
 
 var cities = [
     {
         name: "Manchester",
         x: 1160,
-        y: 480,
-        oilPrice: "450"
+        y: 460,
+        oilPrice: "450",
+        labelFile: "label-man"
     },
     {
         name: "New York",
-        x: 790,
-        y: 590,
-        oilPrice: "600"
+        x: 770,
+        y: 580,
+        oilPrice: "600",
+        labelFile: "label-nyc"
+    },
+    {
+        name: "Johannesburgh",
+        x: 1320,
+        y: 990,
+        oilPrice: "500",
+        labelFile: "label-jon"
+    },
+    {
+        name: "Seoul",
+        x: 1900,
+        y: 620,
+        oilPrice: "720",
+        labelFile: "label-seo"
+    },
+    {
+        name: "Melbourne",
+        x: 1990,
+        y: 1030,
+        oilPrice: "999",
+        labelFile: "label-mel"
     }
 ];
 
 function create () {
     game.physics.startSystem(Phaser.Physics.P2JS);
-    /*game.physics.startSystem(Phaser.Physics.ARCADE);*/
     game.physics.p2.restitution = 0;
     graphics = game.add.graphics(WIDTH, HEIGHT);
 
@@ -49,9 +82,16 @@ function create () {
     game.camera.focusOnXY(1100, 550);
 
     cursors = game.input.keyboard.createCursorKeys();
-    space = game.input.keyboard.addKey(Phaser.Keyboard.SPACE);
-    /*game.input.keyboard.removeKeyCapture(Phaser.Keyboard.SPACE);*/
-    space.onDown.add(console.log("Space"), this);
+    space = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
+    space.onDown.add(buyFuel, this);
+};
+
+function buyFuel() {
+    if ((currentCity.oilPrice)&&(ship.money>0)) {
+        ship.money -= currentCity.oilPrice;
+        ship.fuel += 100;
+    } else {
+    }
 };
 
 function setupWorld() {
@@ -81,24 +121,16 @@ function setupShip() {
     game.physics.enable(ship, Phaser.Physics.ARCADE);
     ship.body.damping = 0.8;
     ship.speed = 0;
+    ship.money = 10000;
     ship.fuel = 1000;
-    ship.money = 1000;
 };
 
 function setupCities() {
     cities.forEach(function(c) {
         game.add.sprite(c.x, c.y, "city");
-        this.game.add.text(c.x+2, c.y-10, c.name, { font: "18px Calibri", fill: "#000000", align: "center" });
-        this.game.add.text(c.x, c.y-10, c.name, { font: "18px Calibri", fill: "#ffffff", align: "center" });
-        c.priceLabel = this.game.add.text(c.x, c.y+40, "Fuel price: $"+c.oilPrice + "/10L", { font: "18px Calibri", fill: "#ffffff", align: "center" });
-        c.priceLabel.kill();
+        c.label = game.add.sprite(c.x-80, c.y-60, c.labelFile);
+        c.label.kill();
     });
-};
-
-function buyFuel(city) {
-    ship.money -= city.oilPrice;
-    ship.fuel += 10;
-    console.log("Bought fuel");
 };
 
 function update () {
@@ -121,15 +153,14 @@ function update () {
     }
 
     // loop through each city
+    currentCity = {};
     cities.forEach(function(c){
         // if ship is nearby
         if ((Math.abs(ship.body.x - c.x)<=100)&&(Math.abs(ship.body.y - c.y)<=100)) {
-            c.priceLabel.revive();
-            space.onDown.add(function(key){
-                buyFuel(c);
-            }, this);
+            c.label.revive();
+            currentCity = c;
         } else {
-            c.priceLabel.kill();
+            c.label.kill();
         }
     });
 
@@ -138,8 +169,18 @@ function update () {
 };
 
 function render () {
+    ctx.clearRect(0, 0, 200, 400);
+    ctx.font = "16px Consolas";
+    ctx.fillStyle = "#ffffff";
+    ctx.fillText("Money: $" + ship.money, 10, 30);
+    ctx.fillText("Fuel left: " + ship.fuel + "L", 10, 50);
+
+    if (currentCity.name) {
+        ctx.fillStyle = "#ffffff"
+        ctx.fillText(currentCity.name, 10, 100);
+        ctx.fillText("Fuel price: $"+currentCity.oilPrice+"/100L", 10, 120);
+        ctx.fillText("Press spacebar to buy", 10, 140);
+    }
 
     // game.debug.text("Active Bullets: " + bullets.countLiving() + " / " + bullets.length, 32, 32);
-    game.debug.text("Money: $" + ship.money, 32, HEIGHT-52);
-    game.debug.text("Fuel left: " + ship.fuel + "/1000 l", 32, HEIGHT-32);
 };
