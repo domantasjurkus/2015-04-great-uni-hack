@@ -11,7 +11,7 @@ function preload () {
     game.load.image("map", "./img/map.png");
     game.load.image("water", "./img/water.jpg");
     game.load.image("city", "./img/city.png");
-    game.load.image("bg", "./img/bg.png");
+    game.load.image("gameover", "./img/gameover.png");
 
     game.load.image("label-man", "./labels/manchester.png");
     game.load.image("label-nyc", "./labels/new_york.png");
@@ -19,8 +19,7 @@ function preload () {
     game.load.image("label-mel", "./labels/melbourne.png");
     game.load.image("label-seo", "./labels/seoul.png");
 
-    game.load.image("leap", "./img/leap.png");
-
+    game.load.audio("sfx", "./sounds/soundtrack.mp3");
     game.load.physics("colShip", "./img/data-ship.json");
     game.load.physics("colMap", "./img/data-map.json");
 };
@@ -32,58 +31,60 @@ var space;
 var graphics;
 var currentCity = {};
 var allItemsPicked = false
+var gameOverSplash;
+var fx;
 
 var cities = [
     {
         name: "Manchester",
         x: 1160,
         y: 460,
-        oilPrice: "450",
+        oilPrice: "244",
         labelFile: "label-man"
     },
     {
         name: "New York",
         x: 770,
         y: 580,
-        oilPrice: "600",
+        oilPrice: "714",
         labelFile: "label-nyc",
         elementName: "leap",
         item: "Leap Motion",
         itemx: 20,
-        itemy: 170
+        itemy: 190
     },
     {
         name: "Johannesburgh",
         x: 1320,
         y: 990,
-        oilPrice: "500",
+        oilPrice: "440",
         labelFile: "label-jon",
         elementName: "burgers",
         item: "Burgers",
         itemx: 150,
-        itemy: 170
+        itemy: 190
     },
     {
         name: "Melbourne",
         x: 1990,
         y: 1030,
-        oilPrice: "999",
+        oilPrice: "312",
         labelFile: "label-mel",
         elementName: "oculus",
         item: "Oculus Rift",
         itemx: 20,
-        itemy: 295
+        itemy: 315
     },
     {
         name: "Seoul",
         x: 1900,
         y: 620,
-        oilPrice: "720",
+        oilPrice: "562",
         labelFile: "label-seo",
         elementName: "kurt",
         item: "Kurt Lee",
         itemx: 150,
-        itemy: 295
+        itemy: 315
     }
 ];
 
@@ -96,9 +97,17 @@ function create () {
     setupShip();
     setupCities();
 
+    gameOverSplash = game.add.sprite(1100, 550, "gameover");
+    gameOverSplash.anchor.setTo(0.5, 0.5);
+    gameOverSplash.kill();
+
     game.camera.follow(ship);
     game.camera.deadzone = new Phaser.Rectangle(150, 150, 500, 300);
     game.camera.focusOnXY(1100, 550);
+
+    fx = game.add.audio("sfx");
+    fx.allowMultiple = true;
+    fx.play();
 
     cursors = game.input.keyboard.createCursorKeys();
     space = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
@@ -200,10 +209,10 @@ function update () {
         }
     });
 
+    // check if all items have been picked up
     if ((ship.pickedLeap)&&(ship.pickedBurg)&&(ship.pickedOculus)&&(ship.pickedKurt)) {
         allItemsPicked = true;
     }
-    /*console.log(allItemsPicked);*/
 
     water.tilePosition.x = -game.camera.x;
     water.tilePosition.y = -game.camera.y;
@@ -211,7 +220,7 @@ function update () {
 
 function render () {
     // draw sidebar
-    ctx.clearRect(0, 0, 300, 165);
+    ctx.clearRect(0, 0, 300, 185);
     ctx.font = "16px Consolas";
     ctx.fillStyle = "#ffffff";
     ctx.fillText("Money: $" + ship.money, 10, 30);
@@ -219,11 +228,12 @@ function render () {
 
     // draw city info
     if (currentCity.name) {
+        ctx.font = "16px Consolas";
         ctx.fillStyle = "#ffffff"
         ctx.fillText(currentCity.name, 10, 100);
         ctx.fillText("Fuel price: $"+currentCity.oilPrice+"/100L", 10, 120);
-        ctx.fillText("Press spacebar to buy", 10, 140);
-        ctx.fillText("Item located: "+currentCity.item, 10, 160);
+        /*ctx.fillText("Press spacebar to buy", 10, 140);*/
+        ctx.fillText("Item located: "+currentCity.item, 10, 180);
 
         if (currentCity.name!=="Manchester") {
             // draw item images
