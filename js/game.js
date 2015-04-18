@@ -16,6 +16,7 @@ function preload () {
 var water;
 var ship;
 var cursors;
+var space;
 var graphics;
 
 var cities = [
@@ -48,18 +49,9 @@ function create () {
     game.camera.focusOnXY(1100, 550);
 
     cursors = game.input.keyboard.createCursorKeys();
-};
-
-function setupShip() {
-    ship = game.add.sprite(1000, 500, "ship");
-    game.physics.p2.enable(ship);
-    ship.body.clearShapes();
-    ship.body.loadPolygon("colShip", "ship");
-    ship.body.collideWorldBounds = true;
-    game.physics.enable(ship, Phaser.Physics.ARCADE);
-    ship.body.damping = 0.8;
-    ship.speed = 0;
-    ship.fuel = 10000;
+    space = game.input.keyboard.addKey(Phaser.Keyboard.SPACE);
+    /*game.input.keyboard.removeKeyCapture(Phaser.Keyboard.SPACE);*/
+    space.onDown.add(console.log("Space"), this);
 };
 
 function setupWorld() {
@@ -80,22 +72,43 @@ function setupWorld() {
     map.body.velocity = {}
 };
 
+function setupShip() {
+    ship = game.add.sprite(1000, 500, "ship");
+    game.physics.p2.enable(ship);
+    ship.body.clearShapes();
+    ship.body.loadPolygon("colShip", "ship");
+    ship.body.collideWorldBounds = true;
+    game.physics.enable(ship, Phaser.Physics.ARCADE);
+    ship.body.damping = 0.8;
+    ship.speed = 0;
+    ship.fuel = 1000;
+    ship.money = 1000;
+};
+
 function setupCities() {
     cities.forEach(function(c) {
         game.add.sprite(c.x, c.y, "city");
         this.game.add.text(c.x+2, c.y-10, c.name, { font: "18px Calibri", fill: "#000000", align: "center" });
         this.game.add.text(c.x, c.y-10, c.name, { font: "18px Calibri", fill: "#ffffff", align: "center" });
-        c.priceLabel = this.game.add.text(c.x, c.y+40, "Oil price: "+c.oilPrice, { font: "18px Calibri", fill: "#ffffff", align: "center" });
+        c.priceLabel = this.game.add.text(c.x, c.y+40, "Fuel price: $"+c.oilPrice + "/10L", { font: "18px Calibri", fill: "#ffffff", align: "center" });
         c.priceLabel.kill();
     });
 };
 
+function buyFuel(city) {
+    ship.money -= city.oilPrice;
+    ship.fuel += 10;
+    console.log("Bought fuel");
+};
+
 function update () {
     // thurst
-    if (cursors.up.isDown){
+    if ((cursors.up.isDown)&&(ship.fuel > 0)){
         ship.body.thrust(200);
-    } else if (cursors.down.isDown) {
+        ship.fuel -= 1;
+    } else if ((cursors.down.isDown)&&(ship.fuel > 0)) {
         ship.body.thrust(-50);
+        ship.fuel -= 0.5;
     }
 
     // rotation
@@ -107,12 +120,14 @@ function update () {
         ship.body.setZeroRotation();
     }
 
-    // show price if close to city
+    // loop through each city
     cities.forEach(function(c){
         // if ship is nearby
         if ((Math.abs(ship.body.x - c.x)<=100)&&(Math.abs(ship.body.y - c.y)<=100)) {
-            console.log("Close");
             c.priceLabel.revive();
+            space.onDown.add(function(key){
+                buyFuel(c);
+            }, this);
         } else {
             c.priceLabel.kill();
         }
@@ -123,6 +138,8 @@ function update () {
 };
 
 function render () {
+
     // game.debug.text("Active Bullets: " + bullets.countLiving() + " / " + bullets.length, 32, 32);
-    /*game.debug.text("Enemies: " + enemiesAlive + " / " + enemiesTotal, 32, 32);*/
+    game.debug.text("Money: $" + ship.money, 32, HEIGHT-52);
+    game.debug.text("Fuel left: " + ship.fuel + "/1000 l", 32, HEIGHT-32);
 };
