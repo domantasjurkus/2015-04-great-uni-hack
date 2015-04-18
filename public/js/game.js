@@ -19,6 +19,8 @@ function preload () {
     game.load.image("label-mel", "./labels/melbourne.png");
     game.load.image("label-seo", "./labels/seoul.png");
 
+    game.load.image("leap", "./img/leap.png");
+
     game.load.physics("colShip", "./img/data-ship.json");
     game.load.physics("colMap", "./img/data-map.json");
 };
@@ -29,6 +31,7 @@ var cursors;
 var space;
 var graphics;
 var currentCity = {};
+var allItemsPicked = false
 
 var cities = [
     {
@@ -43,28 +46,44 @@ var cities = [
         x: 770,
         y: 580,
         oilPrice: "600",
-        labelFile: "label-nyc"
+        labelFile: "label-nyc",
+        elementName: "leap",
+        item: "Leap Motion",
+        itemx: 20,
+        itemy: 170
     },
     {
         name: "Johannesburgh",
         x: 1320,
         y: 990,
         oilPrice: "500",
-        labelFile: "label-jon"
-    },
-    {
-        name: "Seoul",
-        x: 1900,
-        y: 620,
-        oilPrice: "720",
-        labelFile: "label-seo"
+        labelFile: "label-jon",
+        elementName: "burgers",
+        item: "Burgers",
+        itemx: 150,
+        itemy: 170
     },
     {
         name: "Melbourne",
         x: 1990,
         y: 1030,
         oilPrice: "999",
-        labelFile: "label-mel"
+        labelFile: "label-mel",
+        elementName: "oculus",
+        item: "Oculus Rift",
+        itemx: 20,
+        itemy: 295
+    },
+    {
+        name: "Seoul",
+        x: 1900,
+        y: 620,
+        oilPrice: "720",
+        labelFile: "label-seo",
+        elementName: "kurt",
+        item: "Kurt Lee",
+        itemx: 150,
+        itemy: 295
     }
 ];
 
@@ -90,6 +109,9 @@ function buyFuel() {
     if ((currentCity.oilPrice)&&(ship.money>0)) {
         ship.money -= currentCity.oilPrice;
         ship.fuel += 100;
+        if (ship.money < 0) {
+            ship.money = 0;
+        }
     } else {
     }
 };
@@ -138,6 +160,9 @@ function update () {
     if ((cursors.up.isDown)&&(ship.fuel > 0)){
         ship.body.thrust(200);
         ship.fuel -= 1;
+        if (ship.fuel < 0) {
+            ship.fuel = 0;
+        }
     } else if ((cursors.down.isDown)&&(ship.fuel > 0)) {
         ship.body.thrust(-50);
         ship.fuel -= 0.5;
@@ -159,28 +184,52 @@ function update () {
         if ((Math.abs(ship.body.x - c.x)<=100)&&(Math.abs(ship.body.y - c.y)<=100)) {
             c.label.revive();
             currentCity = c;
+            if (currentCity.name == "New York") {
+                ship.pickedLeap = true;
+            } else if (currentCity.name == "Johannesburgh") {
+                ship.pickedBurg = true;
+            } else if (currentCity.name == "Melbourne") {
+                ship.pickedOculus = true;
+            } else if (currentCity.name == "Seoul") {
+                ship.pickedKurt = true;
+            }
+
         } else {
             c.label.kill();
+            //itemCounted = false;
         }
     });
+
+    if ((ship.pickedLeap)&&(ship.pickedBurg)&&(ship.pickedOculus)&&(ship.pickedKurt)) {
+        allItemsPicked = true;
+    }
+    /*console.log(allItemsPicked);*/
 
     water.tilePosition.x = -game.camera.x;
     water.tilePosition.y = -game.camera.y;
 };
 
 function render () {
-    ctx.clearRect(0, 0, 200, 400);
+    // draw sidebar
+    ctx.clearRect(0, 0, 300, 165);
     ctx.font = "16px Consolas";
     ctx.fillStyle = "#ffffff";
     ctx.fillText("Money: $" + ship.money, 10, 30);
     ctx.fillText("Fuel left: " + ship.fuel + "L", 10, 50);
 
+    // draw city info
     if (currentCity.name) {
         ctx.fillStyle = "#ffffff"
         ctx.fillText(currentCity.name, 10, 100);
         ctx.fillText("Fuel price: $"+currentCity.oilPrice+"/100L", 10, 120);
         ctx.fillText("Press spacebar to buy", 10, 140);
-    }
+        ctx.fillText("Item located: "+currentCity.item, 10, 160);
 
-    // game.debug.text("Active Bullets: " + bullets.countLiving() + " / " + bullets.length, 32, 32);
+        if (currentCity.name!=="Manchester") {
+            // draw item images
+            var img = document.getElementById(currentCity.elementName);
+            ctx.drawImage(img, currentCity.itemx, currentCity.itemy);
+            ctx.fillText(currentCity.item, currentCity.itemx, currentCity.itemy+112);
+        }
+    }
 };
