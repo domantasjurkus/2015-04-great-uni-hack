@@ -16,8 +16,8 @@ function populateTable() {
 
     // Empty content string
     var tableContent = '';
-/*
-    var query = JSON.stringify( {
+
+    var query = {
         "securities": [
             "QKK5 Comdty", // GB GBP
             "W N5 Comdty", // US USD
@@ -27,20 +27,19 @@ function populateTable() {
             "USDGBP Curncy",
             "ZARGBP Curncy",
             "AUDGBP Curncy",
-            "CNYGBP Curncy",
+            "CNYGBP Curncy"
         ],
         "fields": [
             //"PX_HIGH",
             //"PX_LOW",
             //"PX_MID",
-            "PX_LAST",
+            "PX_LAST"
         ],
         "startDate": "20150401",
         "endDate": "20150401",
         "periodicitySelection": "DAILY"
-    });
-*/
-
+    };
+/*
     var query = {
         "securities": ["QKK5 Comdty"],
         "fields": ["PX_LAST"],
@@ -48,10 +47,11 @@ function populateTable() {
         "endDate": "20150401",
         "periodicitySelection": "DAILY"
     };
+*/
     // jQuery AJAX call for JSON
     $.ajax({
         type: 'GET',
-        url: '/users/blpapi',
+        url: '/blp/api',
         data: query,
         dataType: "JSON"
     })

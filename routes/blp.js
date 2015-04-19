@@ -10,7 +10,7 @@ router.get('/', function(req, res, next) {
 });
 
 /* GET Bloomberg listing. */
-router.get('/blpapi', function(rreq, rres, rnext) {
+router.get('/api', function(rreq, rres, rnext) {
 
   var options = {
     host: "http-api.openbloomberg.com",
