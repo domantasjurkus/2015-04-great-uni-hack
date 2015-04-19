@@ -10,9 +10,9 @@ var braintree = require('braintree');
 // Braintree testing keys only
 var gateway = braintree.connect({
   environment: braintree.Environment.Sandbox,
-  merchantId: "s5z4gd2yp9jy2w6c",
-  publicKey: "py87fkrx7nwwdtbr",
-  privateKey: "e83043f73e31da0259cabf4e3d54601c"
+  merchantId: "useYourMerchantId",
+  publicKey: "useYourPublicKey",
+  privateKey: "useYourPrivateKey"
 });
 
 var routes = require('./routes/index');
