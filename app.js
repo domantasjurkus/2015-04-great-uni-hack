@@ -7,6 +7,7 @@ var bodyParser = require('body-parser');
 
 var braintree = require('braintree');
 
+// Braintree testing keys only
 var gateway = braintree.connect({
   environment: braintree.Environment.Sandbox,
   merchantId: "s5z4gd2yp9jy2w6c",
