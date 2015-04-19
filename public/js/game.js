@@ -19,6 +19,8 @@ function preload () {
     game.load.image("label-mel", "./labels/melbourne.png");
     game.load.image("label-seo", "./labels/seoul.png");
 
+    game.load.image("sup", "./img/spaceup.png")
+    game.load.image("sdown", "./img/spacedown.png")
     game.load.audio("sfx", "./sounds/soundtrack.mp3");
     game.load.physics("colShip", "./img/data-ship.json");
     game.load.physics("colMap", "./img/data-map.json");
@@ -30,7 +32,8 @@ var cursors;
 var space;
 var graphics;
 var currentCity = {};
-var allItemsPicked = false
+var allItemsPicked = false;
+var itemsDelivered = false;
 var gameOverSplash;
 var fx;
 
@@ -152,7 +155,7 @@ function setupShip() {
     game.physics.enable(ship, Phaser.Physics.ARCADE);
     ship.body.damping = 0.8;
     ship.speed = 0;
-    ship.money = 10000;
+    ship.money = 5000;
     ship.fuel = 1000;
 };
 
@@ -202,10 +205,13 @@ function update () {
             } else if (currentCity.name == "Seoul") {
                 ship.pickedKurt = true;
             }
+            // gamewin
+            if ((currentCity.name=="Manchester")&&(allItemsPicked === true)) {
+                itemsDelivered = true; 
+            }
 
         } else {
             c.label.kill();
-            //itemCounted = false;
         }
     });
 
@@ -218,21 +224,28 @@ function update () {
     water.tilePosition.y = -game.camera.y;
 };
 
+var pressed = false;
 function render () {
     // draw sidebar
     ctx.clearRect(0, 0, 300, 185);
-    ctx.font = "16px Consolas";
-    ctx.fillStyle = "#ffffff";
-    ctx.fillText("Money: $" + ship.money, 10, 30);
-    ctx.fillText("Fuel left: " + ship.fuel + "L", 10, 50);
 
     // draw city info
     if (currentCity.name) {
         ctx.font = "16px Consolas";
         ctx.fillStyle = "#ffffff"
         ctx.fillText(currentCity.name, 10, 100);
-        ctx.fillText("Fuel price: $"+currentCity.oilPrice+"/100L", 10, 120);
-        /*ctx.fillText("Press spacebar to buy", 10, 140);*/
+        ctx.fillText("Fuel price: $"+currentCity.oilPrice+"/100L", 10, 130);
+        ctx.fillText("To buy fuel:", 10, 500);
+        ctx.drawImage(document.getElementById("sup"), 125, 475);
+
+/*
+        setTimeout(function(){
+            ctx.drawImage(document.getElementById("sup"), 125, 475);
+        }, 1000);
+        setTimeout(function(){
+            ctx.drawImage(document.getElementById("sdown"), 125, 475);
+        }, 2000);
+*/
         ctx.fillText("Item located: "+currentCity.item, 10, 180);
 
         if (currentCity.name!=="Manchester") {
@@ -242,4 +255,19 @@ function render () {
             ctx.fillText(currentCity.item, currentCity.itemx, currentCity.itemy+112);
         }
     }
+
+    // draw GUI
+    if (itemsDelivered == false) {
+        ctx.font = "16px Consolas";
+        ctx.fillStyle = "#ffffff";
+        ctx.fillText("Money: $" + ship.money, 10, 30);
+        ctx.fillText("Fuel left: " + ship.fuel + "L", 10, 50);
+    // draw gamewin condition
+    } else {
+        ctx.clearRect(0, 0, 300, 185);
+        ctx.fillStyle = "#00dd00";
+        ctx.font = "32px Consolas";
+        ctx.fillText("WOOT Win!!", 60, 100);
+    }
+
 };
