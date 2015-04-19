@@ -1,3 +1,5 @@
 .idea
+*.log
+blpapi/*
 data
 node_modules
