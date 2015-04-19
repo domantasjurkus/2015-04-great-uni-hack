@@ -220,6 +220,11 @@ function update () {
         allItemsPicked = true;
     }
 
+    // check is we're out of fuel
+    if (ship.fuel <= 0) {
+        // draw game over splash
+    }
+
     water.tilePosition.x = -game.camera.x;
     water.tilePosition.y = -game.camera.y;
 };
@@ -227,25 +232,17 @@ function update () {
 var pressed = false;
 function render () {
     // draw sidebar
-    ctx.clearRect(0, 0, 300, 185);
+    ctx.clearRect(0, 0, 400, 185);
+    ctx.clearRect(0, 450, 400, 350);
 
     // draw city info
-    if (currentCity.name) {
+    if ((currentCity.name)&&(itemsDelivered==false)) {
         ctx.font = "16px Consolas";
         ctx.fillStyle = "#ffffff"
         ctx.fillText(currentCity.name, 10, 100);
         ctx.fillText("Fuel price: $"+currentCity.oilPrice+"/100L", 10, 130);
-        ctx.fillText("To buy fuel:", 10, 500);
-        ctx.drawImage(document.getElementById("sup"), 125, 475);
-
-/*
-        setTimeout(function(){
-            ctx.drawImage(document.getElementById("sup"), 125, 475);
-        }, 1000);
-        setTimeout(function(){
-            ctx.drawImage(document.getElementById("sdown"), 125, 475);
-        }, 2000);
-*/
+        ctx.fillText("To buy fuel:", 10, 550);
+        ctx.drawImage(document.getElementById("sup"), 125, 525);
         ctx.fillText("Item located: "+currentCity.item, 10, 180);
 
         if (currentCity.name!=="Manchester") {
