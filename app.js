@@ -5,6 +5,15 @@ var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 
+var braintree = require('braintree');
+
+var gateway = braintree.connect({
+  environment: braintree.Environment.Sandbox,
+  merchantId: "s5z4gd2yp9jy2w6c",
+  publicKey: "py87fkrx7nwwdtbr",
+  privateKey: "e83043f73e31da0259cabf4e3d54601c"
+});
+
 var routes = require('./routes/index');
 var blp = require('./routes/blp');
 
@@ -21,17 +30,33 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
-/*
-// Make our db accessible to our router
+
+// Make gateway accessible to our router
 app.use(function(req,res,next){
-  req.https = https;
-  req.fs = fs;
+  req.gateway = gateway;
   next();
 });
-*/
+
 app.use('/', routes);
 app.use('/blp', blp);
+/*
+// example transaction
+gateway.transaction.sale({
+  amount: '0.05',
+  creditCard: {
+    number: '5105105105105100',
+    expirationDate: '05/12'
+  }
+}, function (err, result) {
+  if (err) throw err;
 
+  if (result.success) {
+    console.log('Transaction ID: ' + result.transaction.id);
+  } else {
+    console.log(result.message);
+  }
+});
+*/
 // catch 404 and forward to error handler
 app.use(function(blp, res, next) {
   var err = new Error('Not Found');
